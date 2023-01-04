@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Soru Cevap Chatbot</title>
+</head>
+
+<body>
+  <h1>Soru Cevap Chatbot</h1>
+  <div id="chatlog"></div>
+  <form id="chatform">
+    <input id="chatbox" type="text" autocomplete="off" placeholder="Soru sorun..." />
+    <button type="submit">Gönder</button>
+  </form>
+
+  <script>
+    const chatlog = document.getElementById("chatlog");
+    const chatform = document.getElementById("chatform");
+    const chatbox = document.getElementById("chatbox");
+
+    function addToChatlog(text) {
+      // chatlog'a yeni bir <p> elementi oluştur
+      const p = document.createElement("p");
+      // <p> elementine text'i ekle
+      p.innerText = text;
+      // <p> elementini chatlog'a ekle
+      chatlog.appendChild(p);
+      // chatlog'u en aşağıya scrol et
+      chatlog.scrollTop = chatlog.scrollHeight;
+    }
+
+    // Form submit olayını dinle
+    chatform.addEventListener("submit", (event) => {
+      // Formun gönderilmesini önle
+      event.preventDefault();
+      // Kullanıcının soru sorduğunu chatlog'a ekle
+      addToChatlog(`Siz: ${chatbox.value}`);
+      // chatbox'ı temizle
+      chatbox.value = "";
+
+      // OpenAI API'sine soruyu gönder ve yanıtı al
+      const endpoint = "https://api.openai.com/v1/models/text-davinci-002/completions";
+      const prompt = `Sorunuz: ${chatbox.value}`;
+      const apiKey = "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";
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      };
+      const body = JSON.stringify({
+        prompt,
+        max_tokens: 256,
+      });
+      fetch(endpoint, {
+        method: "POST",
+        headers,
+        body,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const response = data.choices[0].text;
+          // OpenAI API'sinin yanıtını chatlog'a ekle
+          addToChatlog(`Bot: ${response}`);
+        })
+        .catch((error) => {
+          console.error(error);
+          addToChatlog("Hata oluştu.");
+        });
+    });
+  </script>
+</body>
+
+</html>
